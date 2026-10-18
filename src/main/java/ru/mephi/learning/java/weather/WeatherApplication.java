@@ -1,8 +1,6 @@
 
 package ru.mephi.learning.java.weather;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import java.io.IOException;
 import java.util.Locale;
 
@@ -34,32 +32,36 @@ public class WeatherApplication {
                     FORECAST_DAYS
             );
 
-            System.out.println("Full API response:");
-            System.out.println(json);
+            WeatherSummary summary = service.analyze(json, FORECAST_DAYS);
 
-            JsonNode root = service.parseResponse(json);
-
-            int currentTemperature = service.getCurrentTemperature(root);
-            double averageTemperature = service.getAverageTemperature(
-                    root,
-                    FORECAST_DAYS
-            );
-
-            System.out.println();
-            System.out.println("Current temperature: "
-                               + currentTemperature + " °C");
-
-            System.out.printf(
-                    Locale.ROOT,
-                    "Average daytime temperature for %d days: %.2f °C%n",
-                    FORECAST_DAYS,
-                    averageTemperature
-            );
+            printResults(json, summary, FORECAST_DAYS);
 
         } catch (IOException | IllegalArgumentException e) {
             System.err.println(
                     "Failed to process weather data: " + e.getMessage()
             );
         }
+    }
+
+    private static void printResults(
+            String json,
+            WeatherSummary summary,
+            int days
+    ) {
+        System.out.println("Full API response:");
+        System.out.println(json);
+
+        System.out.println();
+        System.out.println(
+                "Current temperature: "
+                + summary.currentTemperature() + " °C"
+        );
+
+        System.out.printf(
+                Locale.ROOT,
+                "Average daytime temperature for %d days: %.2f °C%n",
+                days,
+                summary.averageTemperature()
+        );
     }
 }

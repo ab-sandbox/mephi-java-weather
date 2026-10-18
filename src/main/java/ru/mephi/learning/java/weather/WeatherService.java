@@ -10,54 +10,38 @@ public class WeatherService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public JsonNode parseResponse(String json) throws IOException {
-        return objectMapper.readTree(json);
+    public WeatherSummary analyze(String json, int limit) throws IOException {
+        validateForecastLimit(limit);
+
+        JsonNode root = objectMapper.readTree(json);
+
+        int currentTemperature = extractCurrentTemperature(root);
+        double averageTemperature = calculateAverageTemperature(root, limit);
+
+        return new WeatherSummary(currentTemperature, averageTemperature);
     }
 
-    public int getCurrentTemperature(JsonNode root) {
+    private static int extractCurrentTemperature(JsonNode root) {
         JsonNode temperature = root.required("fact")
                 .required("temp")
                 .requireNonNull();
 
-        validateCurrentTemperature(temperature);
+        if (!temperature.isIntegralNumber() || !temperature.canConvertToInt()) {
+            throw new IllegalArgumentException("Invalid current temperature");
+        }
 
         return temperature.intValue();
     }
 
-    public double getAverageTemperature(JsonNode root, int limit) {
-        validateForecastLimit(limit);
-
+    private static double calculateAverageTemperature(JsonNode root, int limit) {
         JsonNode forecasts = root.required("forecasts");
-        validateForecasts(forecasts, limit);
 
-        return calculateAverageTemperature(forecasts, limit);
-    }
-
-    private static void validateCurrentTemperature(JsonNode temperature) {
-        if (!temperature.isIntegralNumber() || !temperature.canConvertToInt()) {
-            throw new IllegalArgumentException(
-                    "Invalid current temperature"
-            );
-        }
-    }
-
-    private static void validateForecastLimit(int limit) {
-        if (limit <= 0) {
-            throw new IllegalArgumentException(
-                    "Forecast limit must be positive"
-            );
-        }
-    }
-
-    private static void validateForecasts(JsonNode forecasts, int limit) {
         if (!forecasts.isArray() || forecasts.size() < limit) {
             throw new IllegalArgumentException(
                     "Not enough forecast data for " + limit + " days"
             );
         }
-    }
 
-    private static double calculateAverageTemperature(JsonNode forecasts, int limit) {
         double sum = 0;
 
         for (int i = 0; i < limit; i++) {
@@ -67,7 +51,11 @@ public class WeatherService {
                     .required("temp_avg")
                     .requireNonNull();
 
-            validateForecastTemperature(temperature, i);
+            if (!temperature.isNumber()) {
+                throw new IllegalArgumentException(
+                        "Invalid temperature for forecast day " + (i + 1)
+                );
+            }
 
             sum += temperature.doubleValue();
         }
@@ -75,12 +63,10 @@ public class WeatherService {
         return sum / limit;
     }
 
-    private static void validateForecastTemperature(
-            JsonNode temperature, int index) {
-
-        if (!temperature.isNumber()) {
+    private static void validateForecastLimit(int limit) {
+        if (limit <= 0) {
             throw new IllegalArgumentException(
-                    "Invalid temperature for forecast day " + (index + 1)
+                    "Forecast limit must be positive"
             );
         }
     }
