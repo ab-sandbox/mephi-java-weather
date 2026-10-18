@@ -1,7 +1,10 @@
 
 package ru.mephi.learning.java.weather;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import java.io.IOException;
+import java.util.Locale;
 
 public class WeatherApplication {
 
@@ -22,6 +25,7 @@ public class WeatherApplication {
         }
 
         WeatherClient client = new WeatherClient(apiKey);
+        WeatherService service = new WeatherService();
 
         try {
             String json = client.getForecast(
@@ -30,11 +34,31 @@ public class WeatherApplication {
                     FORECAST_DAYS
             );
 
+            System.out.println("Full API response:");
             System.out.println(json);
 
-        } catch (IOException e) {
+            JsonNode root = service.parseResponse(json);
+
+            int currentTemperature = service.getCurrentTemperature(root);
+            double averageTemperature = service.getAverageTemperature(
+                    root,
+                    FORECAST_DAYS
+            );
+
+            System.out.println();
+            System.out.println("Current temperature: "
+                               + currentTemperature + " °C");
+
+            System.out.printf(
+                    Locale.ROOT,
+                    "Average daytime temperature for %d days: %.2f °C%n",
+                    FORECAST_DAYS,
+                    averageTemperature
+            );
+
+        } catch (IOException | IllegalArgumentException e) {
             System.err.println(
-                    "Failed to get weather forecast: " + e.getMessage()
+                    "Failed to process weather data: " + e.getMessage()
             );
         }
     }
