@@ -1,4 +1,4 @@
-package ru.mephi.learning.java.weather;
+package ru.mephi.learning.java.weather.client;
 
 import ru.mephi.learning.java.weather.exception.WeatherApiException;
 

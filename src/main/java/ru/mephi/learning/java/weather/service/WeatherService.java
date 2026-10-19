@@ -1,8 +1,9 @@
-package ru.mephi.learning.java.weather;
+package ru.mephi.learning.java.weather.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import ru.mephi.learning.java.weather.model.WeatherSummary;
 import ru.mephi.learning.java.weather.exception.WeatherDataException;
 
 public class WeatherService {

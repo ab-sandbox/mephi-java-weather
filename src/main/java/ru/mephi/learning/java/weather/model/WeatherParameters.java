@@ -1,4 +1,4 @@
-package ru.mephi.learning.java.weather;
+package ru.mephi.learning.java.weather.model;
 
 import ru.mephi.learning.java.weather.exception.WeatherArgumentsException;
 

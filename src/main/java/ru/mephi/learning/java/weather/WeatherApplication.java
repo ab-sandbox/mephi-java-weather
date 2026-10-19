@@ -2,9 +2,13 @@ package ru.mephi.learning.java.weather;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.mephi.learning.java.weather.client.WeatherClient;
 import ru.mephi.learning.java.weather.exception.WeatherApiException;
 import ru.mephi.learning.java.weather.exception.WeatherArgumentsException;
 import ru.mephi.learning.java.weather.exception.WeatherDataException;
+import ru.mephi.learning.java.weather.model.WeatherParameters;
+import ru.mephi.learning.java.weather.model.WeatherSummary;
+import ru.mephi.learning.java.weather.service.WeatherService;
 
 import java.util.Locale;
 
