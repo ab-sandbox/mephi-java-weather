@@ -8,10 +8,6 @@ public class WeatherApplication {
 
     private static final String API_KEY_ENV = "YANDEX_WEATHER_KEY";
 
-    private static final double LATITUDE = 55.75;
-    private static final double LONGITUDE = 37.62;
-    private static final int FORECAST_DAYS = 3;
-
     public static void main(String[] args) throws InterruptedException {
         String apiKey = System.getenv(API_KEY_ENV);
 
@@ -22,19 +18,24 @@ public class WeatherApplication {
             return;
         }
 
-        WeatherClient client = new WeatherClient(apiKey);
-        WeatherService service = new WeatherService();
-
         try {
+            WeatherParameters parameters = WeatherParameters.fromArgs(args);
+
+            WeatherClient client = new WeatherClient(apiKey);
+            WeatherService service = new WeatherService();
+
             String json = client.getForecast(
-                    LATITUDE,
-                    LONGITUDE,
-                    FORECAST_DAYS
+                    parameters.latitude(),
+                    parameters.longitude(),
+                    parameters.limit()
             );
 
-            WeatherSummary summary = service.analyze(json, FORECAST_DAYS);
+            WeatherSummary summary = service.analyze(
+                    json,
+                    parameters.limit()
+            );
 
-            printResults(json, summary, FORECAST_DAYS);
+            printResults(json, summary, parameters.limit());
 
         } catch (IOException | IllegalArgumentException e) {
             System.err.println(
