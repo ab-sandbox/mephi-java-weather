@@ -1,6 +1,7 @@
 package ru.mephi.learning.java.weather.client;
 
 import ru.mephi.learning.java.weather.exception.WeatherApiException;
+import ru.mephi.learning.java.weather.validation.WeatherParametersValidator;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -43,7 +44,7 @@ public class WeatherClient {
     public String getForecast(double latitude, double longitude, int limit)
             throws InterruptedException {
 
-        validateParameters(latitude, longitude, limit);
+        WeatherParametersValidator.validate(latitude, longitude, limit);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(buildUri(latitude, longitude, limit))
@@ -90,25 +91,5 @@ public class WeatherClient {
         return HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(CONNECT_TIMEOUT_SECONDS))
                 .build();
-    }
-
-    private static void validateParameters(
-            double latitude,
-            double longitude,
-            int limit) {
-
-        if (!Double.isFinite(latitude) || latitude < -90 || latitude > 90) {
-            throw new IllegalArgumentException("Invalid latitude");
-        }
-
-        if (!Double.isFinite(longitude) || longitude < -180 || longitude > 180) {
-            throw new IllegalArgumentException("Invalid longitude");
-        }
-
-        if (limit <= 0) {
-            throw new IllegalArgumentException(
-                    "Forecast limit must be positive"
-            );
-        }
     }
 }

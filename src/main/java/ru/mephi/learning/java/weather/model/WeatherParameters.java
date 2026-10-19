@@ -1,6 +1,8 @@
+
 package ru.mephi.learning.java.weather.model;
 
 import ru.mephi.learning.java.weather.exception.WeatherArgumentsException;
+import ru.mephi.learning.java.weather.validation.WeatherParametersValidator;
 
 public record WeatherParameters(
         double latitude,
@@ -10,6 +12,10 @@ public record WeatherParameters(
     private static final double DEFAULT_LATITUDE = 55.75;
     private static final double DEFAULT_LONGITUDE = 37.62;
     private static final int DEFAULT_LIMIT = 3;
+
+    public WeatherParameters {
+        WeatherParametersValidator.validate(latitude, longitude, limit);
+    }
 
     public static WeatherParameters fromArgs(String[] args) {
         if (args.length == 0) {

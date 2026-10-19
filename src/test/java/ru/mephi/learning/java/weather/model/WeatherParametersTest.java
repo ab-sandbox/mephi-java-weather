@@ -48,4 +48,46 @@ class WeatherParametersTest {
                 () -> WeatherParameters.fromArgs(args)
         );
     }
+
+
+    @Test
+    void shouldRejectInvalidLatitude() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new WeatherParameters(100, 37.62, 3)
+        );
+    }
+
+    @Test
+    void shouldRejectInvalidLongitude() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new WeatherParameters(55.75, 200, 3)
+        );
+    }
+
+    @Test
+    void shouldRejectInvalidLimit() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new WeatherParameters(55.75, 37.62, 0)
+        );
+    }
+
+    @Test
+    void shouldRejectNonFiniteCoordinates() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new WeatherParameters(Double.NaN, 37.62, 3)
+        );
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new WeatherParameters(
+                        55.75,
+                        Double.POSITIVE_INFINITY,
+                        3
+                )
+        );
+    }
 }
