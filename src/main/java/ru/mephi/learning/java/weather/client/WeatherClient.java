@@ -10,49 +10,43 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.Locale;
+import java.util.Objects;
 
 public class WeatherClient {
 
-    private static final String API_URL =
+    private static final String DEFAULT_FORECAST_URL =
             "https://api.weather.yandex.ru/v2/forecast";
+
     private static final String API_KEY_HEADER = "X-Yandex-Weather-Key";
 
     private static final int CONNECT_TIMEOUT_SECONDS = 10;
     private static final int REQUEST_TIMEOUT_SECONDS = 20;
 
-    private final HttpClient httpClient;
     private final String apiKey;
+    private final String forecastUrl;
+    private final HttpClient httpClient;
 
     public WeatherClient(String apiKey) {
+        this(apiKey, DEFAULT_FORECAST_URL);
+    }
+
+    WeatherClient(String apiKey, String forecastUrl) {
         if (apiKey == null || apiKey.isBlank()) {
             throw new IllegalArgumentException("API key must not be blank");
         }
 
         this.apiKey = apiKey;
-        this.httpClient = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(CONNECT_TIMEOUT_SECONDS))
-                .build();
+        this.forecastUrl = Objects.requireNonNull(forecastUrl);
+        this.httpClient = createHttpClient();
     }
 
-    public String getForecast(
-            double latitude,
-            double longitude,
-            int limit
-    ) throws InterruptedException {
+    public String getForecast(double latitude, double longitude, int limit)
+            throws InterruptedException {
 
         validateParameters(latitude, longitude, limit);
 
-        String url = String.format(
-                Locale.ROOT,
-                "%s?lat=%s&lon=%s&limit=%d",
-                API_URL,
-                latitude,
-                longitude,
-                limit
-        );
-
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
+                .uri(buildUri(latitude, longitude, limit))
                 .header(API_KEY_HEADER, apiKey)
                 .timeout(Duration.ofSeconds(REQUEST_TIMEOUT_SECONDS))
                 .GET()
@@ -79,7 +73,30 @@ public class WeatherClient {
         }
     }
 
-    private static void validateParameters(double latitude, double longitude, int limit) {
+    private URI buildUri(double latitude, double longitude, int limit) {
+        String url = String.format(
+                Locale.ROOT,
+                "%s?lat=%s&lon=%s&limit=%d",
+                forecastUrl,
+                latitude,
+                longitude,
+                limit
+        );
+
+        return URI.create(url);
+    }
+
+    private static HttpClient createHttpClient() {
+        return HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(CONNECT_TIMEOUT_SECONDS))
+                .build();
+    }
+
+    private static void validateParameters(
+            double latitude,
+            double longitude,
+            int limit) {
+
         if (!Double.isFinite(latitude) || latitude < -90 || latitude > 90) {
             throw new IllegalArgumentException("Invalid latitude");
         }
@@ -89,7 +106,9 @@ public class WeatherClient {
         }
 
         if (limit <= 0) {
-            throw new IllegalArgumentException("Forecast limit must be positive");
+            throw new IllegalArgumentException(
+                    "Forecast limit must be positive"
+            );
         }
     }
 }
