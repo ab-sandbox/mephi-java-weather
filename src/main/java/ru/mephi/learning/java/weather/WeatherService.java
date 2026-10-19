@@ -1,24 +1,38 @@
-
 package ru.mephi.learning.java.weather;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.io.IOException;
+import ru.mephi.learning.java.weather.exception.WeatherDataException;
 
 public class WeatherService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public WeatherSummary analyze(String json, int limit) throws IOException {
+    public WeatherSummary analyze(String json, int limit) {
         validateForecastLimit(limit);
 
-        JsonNode root = objectMapper.readTree(json);
+        try {
+            JsonNode root = objectMapper.readTree(json);
 
-        int currentTemperature = extractCurrentTemperature(root);
-        double averageTemperature = calculateAverageTemperature(root, limit);
+            if (root == null || !root.isObject()) {
+                throw new WeatherDataException(
+                        "Weather API response must be a JSON object"
+                );
+            }
 
-        return new WeatherSummary(currentTemperature, averageTemperature);
+            int currentTemperature = extractCurrentTemperature(root);
+            double averageTemperature = calculateAverageTemperature(root, limit);
+
+            return new WeatherSummary(currentTemperature, averageTemperature);
+
+        } catch (JsonProcessingException e) {
+            throw new WeatherDataException("Invalid weather API JSON", e);
+        } catch (IllegalArgumentException e) {
+            throw new WeatherDataException(
+                    "Invalid weather API response: " + e.getMessage(), e
+            );
+        }
     }
 
     private static int extractCurrentTemperature(JsonNode root) {

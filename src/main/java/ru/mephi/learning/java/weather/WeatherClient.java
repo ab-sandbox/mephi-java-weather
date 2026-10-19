@@ -1,5 +1,6 @@
-
 package ru.mephi.learning.java.weather;
+
+import ru.mephi.learning.java.weather.exception.WeatherApiException;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -33,8 +34,11 @@ public class WeatherClient {
                 .build();
     }
 
-    public String getForecast(double latitude, double longitude, int limit)
-            throws IOException, InterruptedException {
+    public String getForecast(
+            double latitude,
+            double longitude,
+            int limit
+    ) throws InterruptedException {
 
         validateParameters(latitude, longitude, limit);
 
@@ -54,18 +58,25 @@ public class WeatherClient {
                 .GET()
                 .build();
 
-        HttpResponse<String> response = httpClient.send(
-                request,
-                HttpResponse.BodyHandlers.ofString()
-        );
+        try {
+            HttpResponse<String> response = httpClient.send(
+                    request,
+                    HttpResponse.BodyHandlers.ofString()
+            );
 
-        if (response.statusCode() != HttpURLConnection.HTTP_OK) {
-            throw new IOException(
-                    "Weather API returned HTTP " + response.statusCode()
+            if (response.statusCode() != HttpURLConnection.HTTP_OK) {
+                throw new WeatherApiException(
+                        "Weather API returned HTTP " + response.statusCode()
+                );
+            }
+
+            return response.body();
+
+        } catch (IOException e) {
+            throw new WeatherApiException(
+                    "Failed to fetch weather forecast", e
             );
         }
-
-        return response.body();
     }
 
     private static void validateParameters(double latitude, double longitude, int limit) {

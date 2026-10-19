@@ -1,5 +1,6 @@
-
 package ru.mephi.learning.java.weather;
+
+import ru.mephi.learning.java.weather.exception.WeatherArgumentsException;
 
 public record WeatherParameters(
         double latitude,
@@ -20,7 +21,7 @@ public record WeatherParameters(
         }
 
         if (args.length != 3) {
-            throw new IllegalArgumentException(
+            throw new WeatherArgumentsException(
                     "Expected arguments: <latitude> <longitude> <limit>"
             );
         }
@@ -32,7 +33,7 @@ public record WeatherParameters(
                     Integer.parseInt(args[2])
             );
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException(
+            throw new WeatherArgumentsException(
                     "Invalid arguments: coordinates and limit must be numeric",
                     e
             );

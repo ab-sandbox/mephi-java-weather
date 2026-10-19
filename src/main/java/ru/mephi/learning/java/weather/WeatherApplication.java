@@ -1,10 +1,17 @@
-
 package ru.mephi.learning.java.weather;
 
-import java.io.IOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.mephi.learning.java.weather.exception.WeatherApiException;
+import ru.mephi.learning.java.weather.exception.WeatherArgumentsException;
+import ru.mephi.learning.java.weather.exception.WeatherDataException;
+
 import java.util.Locale;
 
 public class WeatherApplication {
+
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(WeatherApplication.class);
 
     private static final String API_KEY_ENV = "YANDEX_WEATHER_KEY";
 
@@ -12,9 +19,7 @@ public class WeatherApplication {
         String apiKey = System.getenv(API_KEY_ENV);
 
         if (apiKey == null || apiKey.isBlank()) {
-            System.err.println(
-                    "Environment variable " + API_KEY_ENV + " is not set"
-            );
+            LOGGER.error("Environment variable {} is not set", API_KEY_ENV);
             return;
         }
 
@@ -37,18 +42,20 @@ public class WeatherApplication {
 
             printResults(json, summary, parameters.limit());
 
-        } catch (IOException | IllegalArgumentException e) {
-            System.err.println(
-                    "Failed to process weather data: " + e.getMessage()
-            );
+        } catch (WeatherArgumentsException
+                 | WeatherApiException
+                 | WeatherDataException
+                 | IllegalArgumentException e) {
+
+            LOGGER.error("Failed to process weather forecast", e);
         }
     }
 
     private static void printResults(
             String json,
             WeatherSummary summary,
-            int days
-    ) {
+            int days) {
+
         System.out.println("Full API response:");
         System.out.println(json);
 
